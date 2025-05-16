@@ -30,3 +30,4 @@ get_ensdb <- function() {
     if (!nzchar(dbfile)) stop("EnsDb file not found.")
     EnsDb(dbfile)
 }
+  

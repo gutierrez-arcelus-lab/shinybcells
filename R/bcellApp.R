@@ -12,28 +12,37 @@ bcellApp <- function(...) {
                  plotOutput("plotrna", width = "100%", height = "200px")
         ),
         tabPanel("Bulk ATAC-seq",
-                 selectizeInput("geneatac", "Select gene:", choices = NULL),
-                 numericInput("atacwindow", "Window Size", value = 10e3, min = 1e3, max = 500e3),
+                 radioButtons("atac_plot_mode", "Plot by:", choices = c("Gene" = "gene", "Genomic Position" = "position"),
+                              selected = "gene"),
+                 conditionalPanel(
+                     condition = "input.atac_plot_mode == 'gene'",
+                     selectizeInput("atac_gene", "Select gene:", choices = NULL)
+                 ),
+                 conditionalPanel(
+                     condition = "input.atac_plot_mode == 'position'",
+                     textInput("atac_coords", "Enter GRCh38 Genomic Coordinates (e.g. chr1:10000)")
+                 ),
+                 numericInput("atac_window", "Window Size", value = 10e3, min = 1e3, max = 500e3),
                  actionButton("makeatacplot", "Click to plot!"),
                  plotOutput("plotatac", width = "100%", height = "600px")
         ),
-        navbarMenu("Single-cell RNA-seq", 
-                   tabPanel("UMAPs",
-                            fluidRow(
-                                column(6, selectizeInput("varsc", "Select variable:", choices = c("HTO", "Clusters"))),
-                                column(6, selectizeInput("genesc", "Select gene:", choices = NULL))
-                            ),
-                            fluidRow(
-                                column(6, plotOutput("plotscvars", width = "100%", height = "600px")),
-                                column(6, plotOutput("plotsc", width = "100%", height = "600px"))
-                            )
-                   ),
-                   tabPanel("Bubbleplot",
-                            selectizeInput("markergenes", "Select genes:", multiple = TRUE, choices = NULL),
-                            plotOutput("bubbleplot", inline = TRUE)
-                   )
+        tabPanel("Single-cell RNA-seq", 
+                 fluidRow(
+                     column(6, selectizeInput("varsc", "Select variable:", choices = c("HTO" = "hto", "Clusters" = "cluster"))),
+                     column(6, selectizeInput("genesc", "Select gene:", choices = NULL))
+                 ),
+                 fluidRow(
+                     column(6, plotOutput("plotscvars", width = "100%", height = "600px")),
+                     column(6, plotOutput("plotsc", width = "100%", height = "600px"))
+                 ),
+                 titlePanel("Marker genes"),
+                 fluidRow(
+                     column(4, selectizeInput("markergenes", "Select genes:", multiple = TRUE, choices = NULL)),
+                     column(8, plotOutput("bubbleplot", inline = TRUE))
+                 )
         ),
         tabPanel("Splicing",
+                 HTML('<p style="text-align:right;"><a href="https://github.com/jackhump/leafviz" target="_blank">Powered by LeafViz</a></p>'),
                  selectizeInput("contrast", "Select contrast:", choices = names(splicing_contrasts)),
                  fluidRow(
                      column(6,
@@ -93,18 +102,39 @@ bcellApp <- function(...) {
         
         # Bulk ATAC
         updateSelectizeInput(session,
-                             "geneatac",
+                             "atac_gene",
                              selected = "CD19",
                              choices = atac_genes,
                              server = TRUE)
         
-        plot_atac <-
+        atac_plot <-
             eventReactive(input$makeatacplot, {
                 
-                loc <-
-                    locuszoomr::locus(gene = input$geneatac,
-                                      flank = input$atacwindow,
-                                      ens_db = ensdb)
+                if (input$atac_plot_mode == "gene") {
+                    
+                    loc <-
+                        locuszoomr::locus(gene = input$atac_gene,
+                                          flank = input$atac_window,
+                                          ens_db = ensdb)
+                    
+                } else if (input$atac_plot_mode == "position") {
+                    
+                    
+                    coords_split <- 
+                        stringr::str_split(input$atac_coords, ":") |>
+                        unlist()
+                    
+                    atac_chrom <- coords_split[[1]]
+                    atac_pos <- readr::parse_number(coords_split[[2]])
+                    
+                    region <- c(atac_pos - input$atac_window, 
+                                atac_pos + input$atac_window)
+                    
+                    loc <-
+                        locuszoomr::locus(seqname = atac_chrom,
+                                          xrange = region,
+                                          ens_db = ensdb)
+                }
                 
                 atac_peaks <-
                     interv <-
@@ -177,7 +207,7 @@ bcellApp <- function(...) {
         output$plotatac <-
             renderPlot({
                 input$makeatacplot
-                plot_atac()
+                atac_plot()
             })
         
         #Single-cell RNA-seq
@@ -224,43 +254,49 @@ bcellApp <- function(...) {
         
         markers_plot_data <-
             reactive({
-                req(input$markergenes)
+                req(input$markergenes, input$varsc)
                 
-                if (length(input$markergenes) == 1) {
+                n_genes <- length(input$markergenes)
+                grouping_var <- input$varsc
+                var <- rlang::sym(grouping_var)
+                
+                if (n_genes == 1) {
+                    
                     dat <- 
                         get_sc_data(input$markergenes) |>
                         tibble::add_column(barcode = sc_cells, .before = 1) |>
                         dplyr::left_join(sc_meta, dplyr::join_by(barcode)) |>
-                        dplyr::select(-barcode, -hto) |>
-                        tidyr::pivot_longer(-cluster, names_to = "gene") |>
-                        dplyr::group_by(cluster, gene) |>
+                        tidyr::pivot_longer(-c(barcode, hto, cluster), names_to = "gene") |>
+                        dplyr::group_by(!!var, gene) |>
                         dplyr::summarise(avg.exp = mean(expm1(value)),
                                          pct.exp = mean(value > 0) * 100) |>
                         dplyr::ungroup()
-                } else {
+                    
+                } else if (n_genes > 1) {
+                    
                     dat <- 
-                        purrr::map_dfc(input$markergenes, get_sc_data) |>
+                        purrr::map_dfc(marker_genes, get_sc_data) |>
                         tibble::add_column(barcode = sc_cells, .before = 1) |>
                         dplyr::left_join(sc_meta, dplyr::join_by(barcode)) |>
-                        dplyr::select(-barcode, -hto) |>
-                        dplyr::select(cluster, dplyr::everything()) |>
-                        dplyr::group_by(cluster) |>
+                        dplyr::select({{ grouping_var }}, dplyr::all_of(marker_genes)) |>
+                        dplyr::group_by(!!var) |>
                         dplyr::summarise_all(list(avg.exp = ~mean(expm1(.)),
                                                   pct.exp = ~mean(. > 0) * 100)) |>
                         dplyr::ungroup() |>
-                        tidyr::pivot_longer(-cluster, 
+                        tidyr::pivot_longer(-1, 
                                             names_to = c("gene", ".value"),
                                             names_pattern = c("(.+)_(avg.exp|pct.exp)"))
                     
-                    clust <- dat |>
-                        dplyr::select(cluster, gene, avg.exp) |>
-                        tidyr::pivot_wider(names_from = cluster, values_from = avg.exp) |>
+                    ident <- 
+                        dat |>
+                        dplyr::select({{ grouping_var }}, gene, avg.exp) |>
+                        tidyr::pivot_wider(names_from = {{ grouping_var }}, values_from = avg.exp) |>
                         tibble::column_to_rownames("gene") |>
                         dist() |>
                         hclust()
                     
                     dat <- dat |>
-                        dplyr::mutate(gene = factor(gene, levels = clust$labels[clust$order]))
+                        dplyr::mutate(gene = factor(gene, levels = ident$labels[ident$order]))
                 }
                 
                 dat |>
@@ -270,6 +306,10 @@ bcellApp <- function(...) {
                                                                     avg.exp.scaled < -2.5 ~ -2.5,
                                                                     .default = avg.exp.scaled)) |>
                     dplyr::ungroup()
+                
+               
+                
+               
             })
         
         plot_height = reactive({
@@ -284,7 +324,7 @@ bcellApp <- function(...) {
             renderPlot(res = 96, width = 800, height = function() plot_height(),
                        {
                            req(input$markergenes)
-                           ggplot(markers_plot_data(), aes(x = cluster, y = gene)) +
+                           ggplot(markers_plot_data(), aes(x = .data[[input$varsc]], y = gene)) +
                                geom_point(aes(size = pct.exp, fill = avg.exp.scaled),
                                           stroke = 0.2, shape = 21) +
                                scale_radius(range = c(0, 6),

@@ -172,12 +172,12 @@ sc_hto_plot <-
                                title.position = "top",
                                override.aes = list(size = 3))) 
 
-sc_var_plots <- list("HTO" = sc_hto_plot, "Clusters" = sc_clusters_plot)
+sc_var_plots <- list("hto" = sc_hto_plot, "cluster" = sc_clusters_plot)
 
 usethis::use_data(cluster_labels)
 usethis::use_data(sc_clusters_plot)
 usethis::use_data(sc_hto_plot)
-usethis::use_data(sc_var_plots)
+usethis::use_data(sc_var_plots, overwrite = TRUE)
 
 ###############################################################################
 # ATAC-seq
