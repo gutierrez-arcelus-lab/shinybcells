@@ -5,6 +5,25 @@ library(hdf5r)
 
 usethis::use_package("shiny")
 usethis::use_package("pkgload")
+usethis::use_package("dplyr")
+usethis::use_package("tidyr")
+usethis::use_package("readr")
+usethis::use_package("stringr")
+usethis::use_package("purrr")
+usethis::use_package("tibble")
+usethis::use_package("vroom")
+usethis::use_package("ggplot2")
+usethis::use_package("patchwork")
+usethis::use_package("dplyr")
+usethis::use_package("ggbeeswarm")
+usethis::use_package("ensembldb")
+usethis::use_package("hdf5r")
+usethis::use_package("locuszoomr")
+usethis::use_package("GenomicRanges")
+usethis::use_package("rtracklayer")
+usethis::use_package("leafviz")
+
+
 
 ###############################################################################
 # fig colors

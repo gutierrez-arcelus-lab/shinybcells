@@ -14,5 +14,21 @@ Depends:
     R (>= 2.10)
 LazyData: true
 Imports: 
+    dplyr,
+    ensembldb,
+    GenomicRanges,
+    ggbeeswarm,
+    ggplot2,
+    hdf5r,
+    leafviz,
+    locuszoomr,
+    patchwork,
     pkgload,
-    shiny
+    purrr,
+    readr,
+    rtracklayer,
+    shiny,
+    stringr,
+    tibble,
+    tidyr,
+    vroom

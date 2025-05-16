@@ -369,7 +369,7 @@ bcellApp <- function(...) {
                                            introns = splicing_data()$introns)
             })
         
-        output$cluster_view = DT::renderDT({
+        output$cluster_view <- DT::renderDT({
             clu <- plot_cluster_data()$cluster
             if(!is.null(clu)){
                 if(length(splicing_data()$introns)){
