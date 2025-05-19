@@ -70,7 +70,7 @@ bcellApp <- function(...) {
         
         bigwigs <- 
             list.files(system.file("extdata", package = "shinybcells"),
-                       pattern = "*.bigWig")
+                       pattern = "*_filtered.bigWig")
         
         names(bigwigs) <- sub("^([^_]+_\\d+).+$", "\\1", bigwigs)
         
@@ -153,7 +153,11 @@ bcellApp <- function(...) {
                 
                 atac_gaps <-
                     atac_ranges |>
-                    purrr::map_dfr(~ranges(.) |> gaps() |> as.data.frame(), .id = "stim") |>
+                    purrr::map_dfr(~ranges(.) |> 
+                                       keepSeqlevels(loc$seqname) |> 
+                                       gaps(start = loc$xrange[1], end = loc$xrange[2]) |> 
+                                       as.data.frame(),
+                                   .id = "stim") |>
                     dplyr::mutate(score = 0) |>
                     dplyr::select(stim, start, end, score)
                 
@@ -312,7 +316,7 @@ bcellApp <- function(...) {
                
             })
         
-        plot_height = reactive({
+        plot_height <- reactive({
             req(input$markergenes)
             min_len <- 300
             custom_len <- 50 * length(input$markergenes)

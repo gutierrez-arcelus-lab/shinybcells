@@ -1,4 +1,9 @@
 *.h5 filter=lfs diff=lfs merge=lfs -text
-*.bigWig filter=lfs diff=lfs merge=lfs -text
 *.Rdata filter=lfs diff=lfs merge=lfs -text
 *.sqlite filter=lfs diff=lfs merge=lfs -text
+inst/extdata/BCR_24_filtered.bigWig filter=lfs diff=lfs merge=lfs -text
+inst/extdata/TLR7_24_filtered.bigWig filter=lfs diff=lfs merge=lfs -text
+inst/extdata/DN2_24_filtered.bigWig filter=lfs diff=lfs merge=lfs -text
+inst/extdata/IL4_24_filtered.bigWig filter=lfs diff=lfs merge=lfs -text
+inst/extdata/unst_24_filtered.bigWig filter=lfs diff=lfs merge=lfs -text
+inst/extdata/unst_0_filtered.bigWig filter=lfs diff=lfs merge=lfs -text
