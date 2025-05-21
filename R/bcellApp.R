@@ -66,7 +66,9 @@ bcellApp <- function(...) {
     
     server <- function(input, output, session) {
     
-        ensdb <- get_ensdb()
+        #ensdb <- get_ensdb()
+        ah <- AnnotationHub::AnnotationHub()
+        ensdb <- ah[["AH98047"]]
         
         bigwigs <- 
             list.files(system.file("extdata", package = "shinybcells"),

@@ -14,6 +14,7 @@ Depends:
     R (>= 2.10)
 LazyData: true
 Imports: 
+    AnnotationHub,
     dplyr,
     ensembldb,
     GenomicRanges,
