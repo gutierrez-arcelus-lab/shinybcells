@@ -147,72 +147,78 @@ bcellApp <- function(...) {
                     system.file("extdata", bigwigs, package = "shinybcells") |>
                     setNames(names(bigwigs)) |>
                     purrr::map(~rtracklayer::import(., which = interv))
-                
+                 
                 atac_covered <-
                     atac_ranges |>
                     purrr::map_dfr(as.data.frame, .id = "stim") |>
                     dplyr::select(stim, start, end, score)
-                
-                atac_gaps <-
-                    atac_ranges |>
-                    purrr::map_dfr(~ranges(.) |> 
-                                       keepSeqlevels(loc$seqname) |> 
-                                       gaps(start = loc$xrange[1], end = loc$xrange[2]) |> 
-                                       as.data.frame(),
-                                   .id = "stim") |>
-                    dplyr::mutate(score = 0) |>
-                    dplyr::select(stim, start, end, score)
-                
-                atac_peaks <-
-                    dplyr::bind_rows(atac_covered, atac_gaps) |>
-                    dplyr::mutate(stim = stringr::str_replace(stim, "unst", "Unstim"),
-                                  stim = stringr::str_replace(stim, "IL4", "IL-4c"),
-                                  stim = stringr::str_replace(stim, "TLR7", "TLR7c"),
-                                  stim = stringr::str_replace(stim, "BCR", "BCRc"),
-                                  stim = stringr::str_replace(stim, "DN2", "DN2c"),
-                                  stim = factor(stim, levels = names(atac_colors))) |>
-                    dplyr::arrange(stim, start) |>
-                    tidyr::pivot_longer(start:end, names_to = "dummy", values_to = "pos")
-                
-                plot_atac <-
-                    ggplot(atac_peaks) +
-                    geom_ribbon(aes(x = pos, ymin = 0, ymax = score, color = stim, fill = stim),
-                                linewidth = .5, outline.type = "full", alpha = .5) +
-                    scale_x_continuous(limits = loc$xrange,
-                                       labels = function(x) round(x/1e6L, 2),
-                                       expand = c(0, 0)) +
-                    scale_color_manual(values = atac_colors) +
-                    scale_fill_manual(values = atac_colors) +
-                    facet_wrap(~stim, ncol = 1, strip.position = "right") +
-                    theme_minimal() +
-                    theme(
-                        axis.text = element_text(size = 12),
-                        legend.position = "none",
-                        strip.text.y.right = element_text(angle = 0, size = 12),
-                        panel.grid.major.x = element_blank(),
-                        panel.grid.minor.x = element_blank(),
-                        panel.grid.major.y = element_blank(),
-                        panel.grid.minor.y = element_blank(),
-                        plot.background = element_rect(color = "white", fill = "white")) +
-                    labs(x = NULL)
-                
-                gene_tracks <-
-                    locuszoomr::gg_genetracks(loc, cex.text = 1) +
-                    scale_x_continuous(limits = loc$xrange/1e6,
-                                       labels = function(x) round(x, 2),
-                                       expand = c(0, 0)) +
-                    theme_minimal() +
-                    theme(
-                        axis.text = element_text(size = 12),
-                        axis.title = element_text(size = 12),
-                        plot.background = element_rect(color = "white", fill = "white"))
-                
-                plot_atac / gene_tracks + plot_layout(heights = c(1, .3))
+            
+                if (nrow(atac_covered) > 0) {
+                    
+                    atac_gaps <-
+                        atac_ranges |>
+                        purrr::map_dfr(~ranges(.) |> 
+                                           keepSeqlevels(loc$seqname) |> 
+                                           gaps(start = loc$xrange[1], end = loc$xrange[2]) |> 
+                                           as.data.frame(),
+                                       .id = "stim") |>
+                        dplyr::mutate(score = 0) |>
+                        dplyr::select(stim, start, end, score)
+                    
+                    atac_peaks <-
+                        dplyr::bind_rows(atac_covered, atac_gaps) |>
+                        dplyr::mutate(stim = stringr::str_replace(stim, "unst", "Unstim"),
+                                      stim = stringr::str_replace(stim, "IL4", "IL-4c"),
+                                      stim = stringr::str_replace(stim, "TLR7", "TLR7c"),
+                                      stim = stringr::str_replace(stim, "BCR", "BCRc"),
+                                      stim = stringr::str_replace(stim, "DN2", "DN2c"),
+                                      stim = factor(stim, levels = names(atac_colors))) |>
+                        dplyr::arrange(stim, start) |>
+                        tidyr::pivot_longer(start:end, names_to = "dummy", values_to = "pos")
+                    
+                    plot_atac <-
+                        ggplot(atac_peaks) +
+                        geom_ribbon(aes(x = pos, ymin = 0, ymax = score, color = stim, fill = stim),
+                                    linewidth = .5, outline.type = "full", alpha = .5) +
+                        scale_x_continuous(limits = loc$xrange,
+                                           labels = function(x) round(x/1e6L, 2),
+                                           expand = c(0, 0)) +
+                        scale_color_manual(values = atac_colors) +
+                        scale_fill_manual(values = atac_colors) +
+                        facet_wrap(~stim, ncol = 1, strip.position = "right") +
+                        theme_minimal() +
+                        theme(
+                            axis.text = element_text(size = 12),
+                            legend.position = "none",
+                            strip.text.y.right = element_text(angle = 0, size = 12),
+                            panel.grid.major.x = element_blank(),
+                            panel.grid.minor.x = element_blank(),
+                            panel.grid.major.y = element_blank(),
+                            panel.grid.minor.y = element_blank(),
+                            plot.background = element_rect(color = "white", fill = "white")) +
+                        labs(x = NULL)
+                    
+                    gene_tracks <-
+                        locuszoomr::gg_genetracks(loc, cex.text = 1) +
+                        scale_x_continuous(limits = loc$xrange/1e6,
+                                           labels = function(x) round(x, 2),
+                                           expand = c(0, 0)) +
+                        theme_minimal() +
+                        theme(
+                            axis.text = element_text(size = 12),
+                            axis.title = element_text(size = 12),
+                            plot.background = element_rect(color = "white", fill = "white"))
+                    
+                    plot_atac / gene_tracks + plot_layout(heights = c(1, .3))
+                } else {
+                    return(NULL)
+                }
             })
         
         output$plotatac <-
             renderPlot({
                 input$makeatacplot
+                validate(need(!is.null(atac_plot()), "No data available for selected region"))
                 atac_plot()
             })
         
@@ -258,6 +264,8 @@ bcellApp <- function(...) {
                              choices = sc_genes, 
                              server = TRUE)
         
+        hto_levels <- c("Unstim 0h", "IL4 24h", "IL4 72h", "TLR7 24h", "TLR7 72h", "BCR 24h", "BCR 72h", "DN2 24h", "DN2 72h")
+        
         markers_plot_data <-
             reactive({
                 req(input$markergenes, input$varsc)
@@ -272,6 +280,7 @@ bcellApp <- function(...) {
                         get_sc_data(input$markergenes) |>
                         tibble::add_column(barcode = sc_cells, .before = 1) |>
                         dplyr::left_join(sc_meta, dplyr::join_by(barcode)) |>
+                        dplyr::mutate(hto = factor(hto, levels = hto_levels)) |>
                         tidyr::pivot_longer(-c(barcode, hto, cluster), names_to = "gene") |>
                         dplyr::group_by(!!var, gene) |>
                         dplyr::summarise(avg.exp = mean(expm1(value)),
@@ -281,10 +290,11 @@ bcellApp <- function(...) {
                 } else if (n_genes > 1) {
                     
                     dat <- 
-                        purrr::map_dfc(marker_genes, get_sc_data) |>
+                        purrr::map_dfc(input$markergenes, get_sc_data) |>
                         tibble::add_column(barcode = sc_cells, .before = 1) |>
                         dplyr::left_join(sc_meta, dplyr::join_by(barcode)) |>
-                        dplyr::select({{ grouping_var }}, dplyr::all_of(marker_genes)) |>
+                        dplyr::mutate(hto = factor(hto, levels = hto_levels)) |>
+                        dplyr::select({{ grouping_var }}, dplyr::all_of(input$markergenes)) |>
                         dplyr::group_by(!!var) |>
                         dplyr::summarise_all(list(avg.exp = ~mean(expm1(.)),
                                                   pct.exp = ~mean(. > 0) * 100)) |>
@@ -342,7 +352,7 @@ bcellApp <- function(...) {
                                                     midpoint = 0) +
                                theme_minimal() +
                                theme(
-                                   axis.text.x = element_text(size = 12),
+                                   axis.text.x = element_text(size = 12, angle = 90),
                                    axis.text.y = element_text(size = 12, face = 'italic'),
                                    panel.grid = element_line(linewidth = .25, color = "grey90"),
                                    legend.title = element_text(size = 12),
