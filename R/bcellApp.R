@@ -3,10 +3,26 @@ library(ggplot2)
 library(patchwork)
 library(ensembldb)
 
-
 bcellApp <- function(...) {
     ui <- navbarPage(
         "B cell activation",
+        tabPanel("Home",
+                 fluidPage(
+                     titlePanel("Welcome to the B cell activation shiny app!"),
+                     fluidRow(
+                         column(12,
+                                h3("About this App"),
+                                p("This app is based on the paper titled 'A multi-omics resource of B cell activation reveals mechanisms for immune-mediated diseases'"),
+                                p("You can find the main paper here:"),
+                                tags$a(href = "https://doi.org/10.1101/2025.05.22.25328104", "Read the paper", target = "_blank"),
+                                br(), br(),
+                                h4("Citation:"),
+                                verbatimTextOutput("citation")
+                                )
+                     )
+                     
+                 )
+        ),
         tabPanel("Time course RNA-seq",
                  selectizeInput("generna", "Select gene:", choices = NULL),
                  plotOutput("plotrna", width = "100%", height = "200px")
@@ -66,9 +82,16 @@ bcellApp <- function(...) {
     
     server <- function(input, output, session) {
     
-        #ensdb <- get_ensdb()
-        ah <- AnnotationHub::AnnotationHub()
-        ensdb <- ah[["AH98047"]]
+        #Citation
+        output$citation <- renderText({
+            "Aguiar, Franco, et al. (2025). A multi-omics resource of B cell activation reveals mechanisms for immune-mediated diseases. medRxiv. DOI: 10.1101/2025.05.22.25328104"
+        })
+        
+        
+        # Package data
+        ensdb <- get_ensdb()
+        #ah <- AnnotationHub::AnnotationHub()
+        #ensdb <- ah[["AH98047"]]
         
         bigwigs <- 
             list.files(system.file("extdata", package = "shinybcells"),
@@ -141,7 +164,7 @@ bcellApp <- function(...) {
                 atac_peaks <-
                     interv <-
                     GenomicRanges::GRanges(paste0("chr", loc$seqname),
-                                           IRanges(loc$xrange[1], loc$xrange[2]))
+                                           IRanges::IRanges(loc$xrange[1], loc$xrange[2]))
                 
                 atac_ranges <- 
                     system.file("extdata", bigwigs, package = "shinybcells") |>
@@ -157,9 +180,9 @@ bcellApp <- function(...) {
                     
                     atac_gaps <-
                         atac_ranges |>
-                        purrr::map_dfr(~ranges(.) |> 
-                                           keepSeqlevels(loc$seqname) |> 
-                                           gaps(start = loc$xrange[1], end = loc$xrange[2]) |> 
+                        purrr::map_dfr(~GenomicRanges::ranges(.) |> 
+                                           GenomeInfoDb::keepSeqlevels(loc$seqname) |> 
+                                           GenomicRanges::gaps(start = loc$xrange[1], end = loc$xrange[2]) |> 
                                            as.data.frame(),
                                        .id = "stim") |>
                         dplyr::mutate(score = 0) |>
