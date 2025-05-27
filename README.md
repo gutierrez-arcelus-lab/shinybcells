@@ -1,10 +1,16 @@
 # shinybcells R Package
 
-This repository contains the R package `shinybcells`, which includes large data files managed with Git Large File Storage (LFS). Follow the instructions below to properly install the package and run the application.
+This Shiny App is now available at [mgalab.shinyapps.io/bcellactivation](https://mgalab.shinyapps.io/bcellactivation/)
 
+Follow the instructions below only if you want to install a local version on your machine.
 
 ![Demo](media/shinybcells_demo.gif)
 
+---
+
+## About
+
+This repository contains the R package `shinybcells`, which includes large data files managed with Git Large File Storage (LFS). Follow the instructions below to properly install the package and run the application.
 
 ---
 
