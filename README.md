@@ -2,6 +2,10 @@
 
 This repository contains the R package `shinybcells`, which includes large data files managed with Git Large File Storage (LFS). Follow the instructions below to properly install the package and run the application.
 
+
+![Demo](media/shinybcells_demo.gif)
+
+
 ---
 
 ## 📦 Prerequisites
