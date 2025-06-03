@@ -17,7 +17,7 @@ get_sc_data <- function(gene_i) {
     require(hdf5r)
     
     idx <- which(sc_genes == gene_i)
-    h5file <- H5File$new(system.file("extdata", "bcells_expressed.h5", package = "shinybcells"))
+    h5file <- H5File$new(system.file("extdata", "bcells_expressed.h5", package = "bcellactivation"))
     h5data <- h5file[["expr_data"]]
     gene_data <- h5data$read(args = list(idx, quote(expr=)))
     gene_df <- tibble::tibble( "{gene_i}" := gene_data)
@@ -26,7 +26,7 @@ get_sc_data <- function(gene_i) {
 }
 
 get_ensdb <- function() {
-    dbfile <- system.file("extdata", "Homo_sapiens.GRCh38.ensdb.sqlite", package = "shinybcells")
+    dbfile <- system.file("extdata", "Homo_sapiens.GRCh38.ensdb.sqlite", package = "bcellactivation")
     if (!nzchar(dbfile)) stop("EnsDb file not found.")
     EnsDb(dbfile)
 }

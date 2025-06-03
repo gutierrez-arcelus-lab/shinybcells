@@ -3,3 +3,5 @@ setup/figure_colors_v2.txt
 .Rbuildignore
 .Rproj.user/
 setup/.DS_Store
+inst/
+rsconnect/

@@ -94,7 +94,7 @@ bcellApp <- function(...) {
         #ensdb <- ah[["AH98047"]]
         
         bigwigs <- 
-            list.files(system.file("extdata", package = "shinybcells"),
+            list.files(system.file("extdata", package = "bcellactivation"),
                        pattern = "*_filtered.bigWig")
         
         names(bigwigs) <- sub("^([^_]+_\\d+).+$", "\\1", bigwigs)
@@ -167,7 +167,7 @@ bcellApp <- function(...) {
                                            IRanges::IRanges(loc$xrange[1], loc$xrange[2]))
                 
                 atac_ranges <- 
-                    system.file("extdata", bigwigs, package = "shinybcells") |>
+                    system.file("extdata", bigwigs, package = "bcellactivation") |>
                     setNames(names(bigwigs)) |>
                     purrr::map(~rtracklayer::import(., which = interv))
                  
@@ -391,7 +391,7 @@ bcellApp <- function(...) {
             reactive({
                 req(input$contrast)
                 splicing_contrast <- splicing_contrasts[[input$contrast]]
-                load(system.file("extdata", paste0(splicing_contrast, ".Rdata"), package = "shinybcells"))
+                load(system.file("extdata", paste0(splicing_contrast, ".Rdata"), package = "bcellactivation"))
                 
                 return(list("clusters" = clusters, 
                             "exons_table" = exons_table, 

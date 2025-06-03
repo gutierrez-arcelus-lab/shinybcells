@@ -1,8 +1,8 @@
-# shinybcells R Package
+# bcellactivation R Package
 
 This Shiny App is now available at [mgalab.shinyapps.io/bcellactivation](https://mgalab.shinyapps.io/bcellactivation/)
 
-Follow the instructions below only if you want to install a local version on your machine.
+A local installation of this package will no longer be functional because large files required by the App are not stored in this repository.
 
 ![Demo](media/shinybcells_demo.gif)
 
@@ -10,7 +10,7 @@ Follow the instructions below only if you want to install a local version on you
 
 ## About
 
-This repository contains the R package `shinybcells`, which includes large data files managed with Git Large File Storage (LFS). Follow the instructions below to properly install the package and run the application.
+This repository contains the R package `bcellactivation`, which includes large data files managed with Git Large File Storage (LFS). Follow the instructions below to properly install the package and run the application.
 
 ---
 
@@ -63,7 +63,7 @@ Open R or RStudio and run:
 
 ```r
 # Install the package from the local directory
-devtools::install_local("path/to/shinybcells")
+devtools::install_local("path/to/packagedir")
 ```
 
 ---
@@ -73,7 +73,7 @@ devtools::install_local("path/to/shinybcells")
 After installation, launch the app with:
 
 ```r
-library(shinybcells)
+library(bcellactivation)
 bcellApp()
 ```
 
