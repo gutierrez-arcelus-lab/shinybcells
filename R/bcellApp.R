@@ -13,7 +13,6 @@ bcellApp <- function(...) {
                          column(12,
                                 h3("About this App"),
                                 p("This app is based on the paper titled 'A multi-omics resource of B cell activation reveals mechanisms for immune-mediated diseases'"),
-                                p("You can find the main paper here:"),
                                 tags$a(href = "https://doi.org/10.1101/2025.05.22.25328104", "Read the paper", target = "_blank"),
                                 br(), br(),
                                 h4("Citation:"),
@@ -42,7 +41,7 @@ bcellApp <- function(...) {
                  actionButton("makeatacplot", "Click to plot!"),
                  plotOutput("plotatac", width = "100%", height = "600px")
         ),
-        tabPanel("Single-cell RNA-seq", 
+        tabPanel("Single-cell CITE-seq", 
                  fluidRow(
                      column(6, selectizeInput("varsc", "Select variable:", choices = c("HTO" = "hto", "Clusters" = "cluster"))),
                      column(6, selectizeInput("genesc", "Select gene:", choices = NULL))
@@ -87,11 +86,8 @@ bcellApp <- function(...) {
             "Aguiar, Franco, et al. (2025). A multi-omics resource of B cell activation reveals mechanisms for immune-mediated diseases. medRxiv. DOI: 10.1101/2025.05.22.25328104"
         })
         
-        
         # Package data
         ensdb <- get_ensdb()
-        #ah <- AnnotationHub::AnnotationHub()
-        #ensdb <- ah[["AH98047"]]
         
         bigwigs <- 
             list.files(system.file("extdata", package = "bcellactivation"),
@@ -468,3 +464,4 @@ bcellApp <- function(...) {
     
     shinyApp(ui, server, ...)
 }
+
