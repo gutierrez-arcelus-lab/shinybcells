@@ -176,8 +176,7 @@ bcellApp <- function(...) {
                     
                     atac_gaps <-
                         atac_ranges |>
-                        purrr::map_dfr(~GenomicRanges::ranges(.) |> 
-                                           GenomeInfoDb::keepSeqlevels(loc$seqname) |> 
+                        purrr::map_dfr(~GenomeInfoDb::keepSeqlevels(., paste0("chr", loc$seqname)) |> 
                                            GenomicRanges::gaps(start = loc$xrange[1], end = loc$xrange[2]) |> 
                                            as.data.frame(),
                                        .id = "stim") |>

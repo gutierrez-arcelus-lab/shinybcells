@@ -1,6 +1,6 @@
 Package: bcellactivation
 Title: What the Package Does (One Line, Title Case)
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: 
     person("Vitor", "Aguiar", , "vitor.aguiar@childrens.harvard.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-4137-9518"))

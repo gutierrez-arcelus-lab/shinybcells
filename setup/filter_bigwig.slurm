@@ -19,20 +19,20 @@ conda activate ucsc-tools
 
 cd $SLURM_SUBMIT_DIR
 
-#STIMLIST=./data/stims.txt
-#STIM=$( awk -v ARRID="$SLURM_ARRAY_TASK_ID" 'FNR==ARRID' $STIMLIST )
-#INPUT=./data/bigwig/${STIM}.mRp.clN.bigWig
-#CHROMSIZES=./data/chrom.sizes
-#TEMP=./data/${STIM}.bedgraph
-#TEMPFILT=./data/${STIM}_filtered.bedgraph
-#OUTPUT=../inst/extdata/${STIM}_filtered.bigWig
-#
-#bigWigToBedGraph $INPUT $TEMP
-#
-#awk '$4 > 0.1' $TEMP > $TEMPFILT
-#
-#bedGraphToBigWig $TEMPFILT $CHROMSIZES $OUTPUT
-#
-#rm $TEMP $TEMPFILT
+STIMLIST=./data/stims.txt
+STIM=$( awk -v ARRID="$SLURM_ARRAY_TASK_ID" 'FNR==ARRID' $STIMLIST )
+INPUT=./data/bigwig/${STIM}.mRp.clN.bigWig
+CHROMSIZES=./data/chrom.sizes
+TEMP=./data/${STIM}.bedgraph
+TEMPFILT=./data/${STIM}_filtered.bedgraph
+OUTPUT=../inst/extdata/${STIM}_filtered.bigWig
+
+bigWigToBedGraph $INPUT $TEMP
+
+awk '$4 > 0.1' $TEMP > $TEMPFILT
+
+bedGraphToBigWig $TEMPFILT $CHROMSIZES $OUTPUT
+
+rm $TEMP $TEMPFILT
 
 conda deactivate
