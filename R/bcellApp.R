@@ -157,15 +157,12 @@ bcellApp <- function(...) {
                                           ens_db = ensdb)
                 }
                 
-                atac_peaks <-
-                    interv <-
+                interv <-
                     GenomicRanges::GRanges(paste0("chr", loc$seqname),
                                            IRanges::IRanges(loc$xrange[1], loc$xrange[2]))
                 
                 atac_ranges <- 
-                    system.file("extdata", bigwigs, package = "bcellactivation") |>
-                    setNames(names(bigwigs)) |>
-                    purrr::map(~rtracklayer::import(., which = interv))
+                    purrr::map(bigwigs, ~rtracklayer::import(., which = interv))
                  
                 atac_covered <-
                     atac_ranges |>
@@ -209,10 +206,7 @@ bcellApp <- function(...) {
                             axis.text = element_text(size = 12),
                             legend.position = "none",
                             strip.text.y.right = element_text(angle = 0, size = 12),
-                            panel.grid.major.x = element_blank(),
-                            panel.grid.minor.x = element_blank(),
-                            panel.grid.major.y = element_blank(),
-                            panel.grid.minor.y = element_blank(),
+                            panel.grid = element_blank(),
                             plot.background = element_rect(color = "white", fill = "white")) +
                         labs(x = NULL)
                     
@@ -225,6 +219,7 @@ bcellApp <- function(...) {
                         theme(
                             axis.text = element_text(size = 12),
                             axis.title = element_text(size = 12),
+                            panel.grid = element_blank(),
                             plot.background = element_rect(color = "white", fill = "white"))
                     
                     plot_atac / gene_tracks + plot_layout(heights = c(1, .3))
