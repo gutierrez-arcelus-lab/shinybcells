@@ -23,6 +23,7 @@ usethis::use_package("locuszoomr")
 usethis::use_package("GenomicRanges")
 usethis::use_package("rtracklayer")
 usethis::use_package("leafviz")
+usethis::use_package("shinycssloaders")
 
 
 

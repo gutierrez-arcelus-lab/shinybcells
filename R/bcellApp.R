@@ -47,8 +47,8 @@ bcellApp <- function(...) {
                      column(6, selectizeInput("genesc", "Select gene:", choices = NULL))
                  ),
                  fluidRow(
-                     column(6, plotOutput("plotscvars", width = "100%", height = "600px")),
-                     column(6, plotOutput("plotsc", width = "100%", height = "600px"))
+                     column(6, shinycssloaders::withSpinner(plotOutput("plotscvars", width = "100%", height = "600px"))),
+                     column(6, shinycssloaders::withSpinner(plotOutput("plotsc", width = "100%", height = "600px")))
                  ),
                  titlePanel("Marker genes"),
                  fluidRow(
@@ -91,9 +91,10 @@ bcellApp <- function(...) {
         
         bigwigs <- 
             list.files(system.file("extdata", package = "bcellactivation"),
-                       pattern = "*_filtered.bigWig")
+                       pattern = ".*_filtered\\.bigWig",
+                       full.names = TRUE)
         
-        names(bigwigs) <- sub("^([^_]+_\\d+).+$", "\\1", bigwigs)
+        names(bigwigs) <- sub("^([^_]+_\\d+).+$", "\\1", basename(bigwigs))
         
         ## Bulk RNA
         updateSelectizeInput(session, 
@@ -130,6 +131,8 @@ bcellApp <- function(...) {
         
         atac_plot <-
             eventReactive(input$makeatacplot, {
+
+		target_pos <- NULL
                 
                 if (input$atac_plot_mode == "gene") {
                     
@@ -147,7 +150,9 @@ bcellApp <- function(...) {
                     
                     atac_chrom <- coords_split[[1]]
                     atac_pos <- readr::parse_number(coords_split[[2]])
-                    
+		    
+		            target_pos <- atac_pos
+
                     region <- c(atac_pos - input$atac_window, 
                                 atac_pos + input$atac_window)
                     
@@ -209,6 +214,12 @@ bcellApp <- function(...) {
                             panel.grid = element_blank(),
                             plot.background = element_rect(color = "white", fill = "white")) +
                         labs(x = NULL)
+
+		    if (!is.null(target_pos)) {
+			plot_atac <- plot_atac +
+			    geom_vline(xintercept = target_pos, linetype = "dashed", 
+				       color = "black", linewidth = 0.5, alpha = 0.7)
+		    }
                     
                     gene_tracks <-
                         locuszoomr::gg_genetracks(loc, cex.text = 1) +
