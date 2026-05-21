@@ -1,6 +1,6 @@
 Package: bcellactivation
 Title: Visualizations for the B cell activation multi-omics resource
-Version: 0.1.3
+Version: 0.1.4
 Authors@R: 
     person("Vitor", "Aguiar", , "vitor.aguiar@childrens.harvard.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-4137-9518"))
@@ -11,10 +11,9 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 Depends: 
-    R (>= 2.10)
+    R (>= 3.5)
 LazyData: true
 Imports: 
-    AnnotationHub,
     dplyr,
     ensembldb,
     GenomicRanges,

@@ -17,7 +17,7 @@ usethis::use_package("patchwork")
 usethis::use_package("dplyr")
 usethis::use_package("ggbeeswarm")
 usethis::use_package("ensembldb")
-usethis::use_package("AnnotationHub")
+#usethis::use_package("AnnotationHub")
 usethis::use_package("hdf5r")
 usethis::use_package("locuszoomr")
 usethis::use_package("GenomicRanges")
@@ -26,11 +26,10 @@ usethis::use_package("leafviz")
 usethis::use_package("shinycssloaders")
 
 
-
 ###############################################################################
 # fig colors
 plot_colors <- 
-    read_tsv("./figure_colors_v2.txt", 
+    read_tsv("../../bcellactivation/paper_plots/figure_colors.txt", 
 	     col_names = c("stim", "timep", "col")) |>
     unite("lab", c(stim, timep), sep = "_") |>
     deframe()
@@ -44,28 +43,23 @@ cluster_colors <-
       "C8" = "#F1E78D", "C9" = "#B05D2F", "C10" = "#83BF98", "C11" = "#6ABD5D", 
       "C12" = "#6F8544", "C13" = "#F4817F")
 
-usethis::use_data(plot_colors)
-usethis::use_data(atac_colors)
-usethis::use_data(cluster_colors)
-
 ###############################################################################
 # Bulk RNA-seq
-dat <- read_rds("./deseq_normalized_counts.rds")
+dat <- read_rds("../../bcellactivation/bcell_lowinput/data/deseq_normalized_counts.rds")
 
 bulk_genes <- unique(dat$gene_label)
 
-usethis::use_data(bulk_genes)
-
-gene_exp <- dat |>
+gene_exp <- 
+    dat |>
     pivot_wider(names_from = gene_label, values_from = norm_counts) |>
     unite("condition", c(stim, timep), sep = "_", remove = FALSE) |>
     mutate_at(vars(stim, timep), ~fct_inorder(as.character(.)))
 
-usethis::use_data(gene_exp)
 
 ###############################################################################
 # Single-cell data
-sc_data <- SeuratDisk::LoadH5Seurat("../../lupus/citeseq/data/bcells.h5Seurat")
+sc_data <- 
+    SeuratDisk::LoadH5Seurat("../../bcellactivation//citeseq/data/bcells.h5Seurat")
 
 genes_expressed <- 
     GetAssayData(object = sc_data, assay = "RNA", slot = "data") |>
@@ -98,22 +92,17 @@ h5file$close_all()
 sc_genes <- rownames(expr_mat)
 sc_cells <- colnames(expr_mat)
 
-usethis::use_data(sc_genes)
-usethis::use_data(sc_cells)
-
 sc_meta <- 
     sc_data_sub@meta.data |>
-    as_tibble(rownames = "barcode") |>
-    select(barcode, hto = dmm_hto_call, cluster = seurat_clusters) |>
-    mutate(cluster = factor(cluster, levels = paste0("C", 0:13)))
-
-usethis::use_data(sc_meta, overwrite = TRUE)
+    tibble::as_tibble(rownames = "barcode") |>
+    dplyr::select(barcode, hto = dmm_hto_call, cluster = seurat_clusters) |>
+    dplyr::mutate(cluster = factor(cluster, levels = paste0("C", 0:13)))
 
 umap_df <- 
     Embeddings(sc_data_sub, "umap") |>
-    as_tibble(rownames = "barcode") |>
-    left_join(sc_meta, join_by(barcode)) |>
-    mutate(hto = recode(hto, 
+    tibble::as_tibble(rownames = "barcode") |>
+    dplyr::left_join(sc_meta, dplyr::join_by(barcode)) |>
+    dplyr::mutate(hto = recode(hto, 
 			"Unstim 0h" = "Unstim_0",
 			"IL4 24h" = "IL-4c_24",
 			"IL4 72h" = "IL-4c_72",
@@ -124,13 +113,11 @@ umap_df <-
 			"DN2 24h" = "DN2c_24",
 			"DN2 72h" = "DN2c_72"))
 
-usethis::use_data(umap_df, overwrite = TRUE)
-
 cluster_labels <-
     umap_df |>
-    group_by(cluster) |>
-    summarise_at(vars(UMAP_1, UMAP_2), mean) |>
-    ungroup()
+    dplyr::group_by(cluster) |>
+    dplyr::summarise_at(dplyr::vars(UMAP_1, UMAP_2), mean) |>
+    dplyr::ungroup()
 
 sc_clusters_plot <- 
     ggplot(umap_df, aes(UMAP_1, UMAP_2)) +
@@ -176,23 +163,93 @@ sc_hto_plot <-
 
 sc_var_plots <- list("hto" = sc_hto_plot, "cluster" = sc_clusters_plot)
 
-usethis::use_data(cluster_labels)
-usethis::use_data(sc_clusters_plot)
-usethis::use_data(sc_hto_plot)
-usethis::use_data(sc_var_plots, overwrite = TRUE)
 
 ###############################################################################
 # ATAC-seq
-ah <- AnnotationHub::AnnotationHub()
-ens_data <- ah[["AH98047"]]
 
-db_file <- dbconn(ens_data)@dbname 
-file.copy(db_file, "../inst/extdata/Homo_sapiens.GRCh38.ensdb.sqlite")
+# Use a new R version just to run AnnotationHub, otherwise keep R 4.1
+#ah <- AnnotationHub::AnnotationHub()
+#
+#AnnotationHub::query(ah, c("EnsDb", "Homo sapiens"))
+#
+#ens_data <- ah[["AH119325"]]
+#
+#db_file <- dbconn(ens_data)@dbname 
+#file.copy(db_file, "../inst/extdata/Homo_sapiens.GRCh38.ensdb.sqlite", overwrite = TRUE)
+#
 
-atac_genes <- keys(ens_data, keytype = "SYMBOL")
+ens_data <- ensembldb::EnsDb("../inst/extdata/Homo_sapiens.GRCh38.ensdb.sqlite")
+atac_genes <- ensembldb::keys(ens_data, keytype = "SYMBOL")
 atac_genes <- atac_genes[! atac_genes == ""]
 
-usethis::use_data(atac_genes)
+# Download the MANE Select list
+mane_data <- 
+    "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/current/MANE.GRCh38.v1.5.summary.txt.gz" |>
+    readr::read_tsv()
+
+mane_tx <- 
+    mane_data |>
+    dplyr::select(symbol, MANE_status, Ensembl_nuc) |>
+    dplyr::mutate_at(vars(Ensembl_nuc), ~str_remove(., "\\.\\d+$")) |>
+    pull(Ensembl_nuc)
+
+
+gtf_file <- "/lab-share/IM-Gutierrez-e2/Public/References/Annotations/hsapiens/gencode.v49.primary_assembly.annotation.gtf.gz"
+
+gtf <- vroom::vroom(gtf_file, comment = "#", col_names = FALSE)
+
+gtf_tx <- 
+    dplyr::filter(gtf, X3 == "transcript") |>
+    tibble::rowid_to_column() |>
+    dplyr::mutate(gene_id = stringr::str_extract(X9, "(?<=gene_id\\s\")[^\"]+"),
+		  transcript_id = stringr::str_extract(X9, "(?<=transcript_id\\s\")[^\"]+"),
+		  is_mane = grepl('tag "MANE_Select"|tag "MANE_Plus_Clinical"', X9)) |>
+    dplyr::select(rowid, gene_id, transcript_id, is_mane)
+
+# Build the blacklist
+exc_tx <- 
+    gtf_tx |>
+    dplyr::group_by(gene_id) |>
+    dplyr::filter(any(is_mane == TRUE)) |>
+    dplyr::ungroup() |>
+    dplyr::filter(is_mane == FALSE) |>
+    dplyr::pull(transcript_id)
+
+# Free up memory
+rm(gtf, gtf_tx)
+gc()
+
+# Load full GTF via rtracklayer
+gtf_rtrack <- rtracklayer::import(gtf_file)
+
+# THE FIXES FOR LOCUSZOOMR
+# Force Ensembl chromosome names (chr1 -> 1) to match GWAS data
+GenomeInfoDb::seqlevelsStyle(gtf_rtrack) <- "Ensembl"
+
+# Map GENCODE biotypes to Ensembl biotypes so gg_genetracks can color them
+gtf_rtrack$gene_biotype <- gtf_rtrack$gene_type
+gtf_rtrack$transcript_biotype <- gtf_rtrack$transcript_type
+
+# Drop blacklisted transcripts AND drop top-level 'gene' rows
+# Dropping 'gene' rows forces ensembldb to recalculate boundaries, fixing the long line bug
+exclude_mask <- (gtf_rtrack$transcript_id %in% exc_tx) | (gtf_rtrack$type == "gene")
+gtf_filtered <- gtf_rtrack[!exclude_mask]
+
+# Export and Build
+rtracklayer::export(gtf_filtered, "gencode_v49_filtered.gtf", format = "gtf")
+
+ensembldb::ensDbFromGtf(
+    gtf = "gencode_v49_filtered.gtf",
+    outfile = "GencodeDb.sqlite",
+    organism = "Homo_sapiens",
+    genomeVersion = "GRCh38",
+    version = "49"
+)
+
+file.copy("GencodeDb.sqlite", "../inst/extdata/Homo_sapiens.GRCh38.ensdb2.sqlite", overwrite = TRUE)
+
+unlink("gencode_v49_filtered.gtf")
+unlink("GencodeDb.sqlite")
 
 
 ###############################################################################
@@ -205,5 +262,20 @@ splicing_contrasts <-
       "TLR7c 24h vs. DN2c 24h" = "TLR7vs.DN2",
       "BCRc 24h vs. DN2c 24h" = "BCRvs.DN2")
 
-usethis::use_data(splicing_contrasts, overwrite = TRUE)
-
+usethis::use_data(plot_colors, 
+		  atac_colors, 
+		  cluster_colors, 
+		  gene_exp,
+		  bulk_genes,
+		  sc_genes,
+		  sc_cells,
+		  sc_meta,
+		  umap_df,
+		  cluster_labels,
+		  sc_clusters_plot,
+		  sc_hto_plot,
+		  sc_var_plots,
+		  atac_genes,
+		  mane_tx,
+		  splicing_contrasts,
+		  internal = TRUE, overwrite = TRUE)

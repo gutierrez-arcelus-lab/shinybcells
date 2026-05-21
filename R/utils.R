@@ -26,7 +26,8 @@ get_sc_data <- function(gene_i) {
 }
 
 get_ensdb <- function() {
-    dbfile <- system.file("extdata", "Homo_sapiens.GRCh38.ensdb.sqlite", package = "bcellactivation")
+    #dbfile <- system.file("extdata", "Homo_sapiens.GRCh38.ensdb.sqlite", package = "bcellactivation")
+    dbfile <- system.file("extdata", "Homo_sapiens.GRCh38.ensdb2.sqlite", package = "bcellactivation")
     if (!nzchar(dbfile)) stop("EnsDb file not found.")
     EnsDb(dbfile)
 }

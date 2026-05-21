@@ -151,7 +151,7 @@ bcellApp <- function(...) {
                     atac_chrom <- coords_split[[1]]
                     atac_pos <- readr::parse_number(coords_split[[2]])
 		    
-		            target_pos <- atac_pos
+		    target_pos <- atac_pos
 
                     region <- c(atac_pos - input$atac_window, 
                                 atac_pos + input$atac_window)
