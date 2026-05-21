@@ -1,8 +1,9 @@
-setup/deseq_normalized_counts.rds
-setup/figure_colors_v2.txt
 .Rbuildignore
 .Rproj.user/
 setup/.DS_Store
+setup/deseq_normalized_counts.rds
+setup/figure_colors_v2.txt
+setup/data/
 inst/
 rsconnect/
 downloads/

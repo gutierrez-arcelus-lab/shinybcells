@@ -17,7 +17,6 @@ usethis::use_package("patchwork")
 usethis::use_package("dplyr")
 usethis::use_package("ggbeeswarm")
 usethis::use_package("ensembldb")
-#usethis::use_package("AnnotationHub")
 usethis::use_package("hdf5r")
 usethis::use_package("locuszoomr")
 usethis::use_package("GenomicRanges")
@@ -59,7 +58,7 @@ gene_exp <-
 ###############################################################################
 # Single-cell data
 sc_data <- 
-    SeuratDisk::LoadH5Seurat("../../bcellactivation//citeseq/data/bcells.h5Seurat")
+    SeuratDisk::LoadH5Seurat("./data/bcells.h5Seurat")
 
 genes_expressed <- 
     GetAssayData(object = sc_data, assay = "RNA", slot = "data") |>
